@@ -6,11 +6,19 @@ class Fixes
 {
   protected static $_patterns = array(
     '8 leading spaces' => array(
-      '/\n\s{8}/s' => "\n\n"),
+      '/\n\s{8,}([^\s])/s' => "\n\n$1"),
     'spaces on empty lines' => array(
       '/\n\s+\n/s' => "\n\n"),
     '8 leading spaces and then five quotes' => array(
-      '/\n\s{8}>\s>\s>\s>\s>\s>\s/s' => "\n\n"),
+      '/\n\s{8}>\s>\s>\s>\s>\s>\s?/s' => "\n\n"),
+    '4 leading spaces' => array(
+      '/\n\s{4}([^\s])/' => "\n$1"),
+    'more than two empty lines' => array(
+      '/(\n\s*){3,}/' => "\n\n"),
+    'new line on a quote block' => array(
+      '/\n\n>\s+\n>/' => "\n>\n>"),
+    'horizontal rules' => array(
+      '(\\___){2,}' => '---------------------------------------')
     );
 
   protected static function listOfPatterns($pattern_name)
@@ -35,6 +43,8 @@ class Fixes
       'spaces on empty lines',
       '8 leading spaces and then five quotes',
       '8 leading spaces',
+      'more than two empty lines',
+      'new line on a quote block',
     );
 
     return static::translateNamesToPatterns($patterns);
@@ -43,8 +53,8 @@ class Fixes
   protected static function assembleSpecificPatternsForFile($filename)
   {
     $patterns = array(
-      'book-of-mormon-problems.htm' => array(
-        '8 leading spaces',
+      'moretempleexp.htm' => array(
+        '4 leading spaces',
       ),
     );
     $needed = (isset($patterns[$filename]) ? $patterns[$filename] : array());
