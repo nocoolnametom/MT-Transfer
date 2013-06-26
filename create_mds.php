@@ -4,9 +4,9 @@ require 'vendor/autoload.php';
 $config = new MT_Transfer\Config('config.ini');
 
 if ($config->get('use_markdown_extra', 'options')) {
-  $converter = new Markdownify\ConverterExtra(true, false, false);
+  $converter = new MT_Transfer\ConverterExtra(false, false, false);
 } else {
-  $converter = new Markdownify\Converter(true, false, false);
+  $converter = new Markdownify\Converter(false, false, false);
 }
 
 $domain = rtrim('http://' . $config->get('subdomain', 'website_information')
@@ -37,6 +37,10 @@ while(count($urls))
   $finished_urls[$url] = $url;
   $extra_url_page = new MT_Transfer\Page($domain, $url, $content_div_id, $converter, $no_warn);
   $page_title = $extra_url_page->getTitleTag();
+  if ($page_title == '404 Not Found')
+  {
+    continue;
+  }
   $urls = array_merge($urls, $extra_url_page->getInternalLinks());
   $markdown = MT_Transfer\Fixes::getFixedMarkdown($extra_url_page);
 

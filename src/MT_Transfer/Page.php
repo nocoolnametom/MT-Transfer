@@ -95,7 +95,7 @@ class Page
   {
     if (is_null($converter))
     {
-      $this->_converter = new \Markdownify\Converter(true, false, false);
+      $this->_converter = new \Markdownify\Converter(false, false, false);
     }
     else
     {
