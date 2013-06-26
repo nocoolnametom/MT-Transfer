@@ -10,6 +10,7 @@ class Page
   protected $default_div = 'body';
   protected $_raw_page;
   protected $_body_dom;
+  protected $_title_tag;
   protected $_body_html;
   protected $_markdown;
   protected $_converter;
@@ -129,6 +130,29 @@ class Page
     return $this->_body_dom;
   }
 
+  public function getTitleTag()
+  {
+    return ($this->_title_tag ? $this->_title_tag : $this->assembleTitleTag());
+  }
+
+  public function assembleTitleTag()
+  {
+    $dom = $this->getBodyDom();
+    if ($dom === false)
+    {
+      return $this->_title_tag;
+    }
+    $page_elements = array();
+
+    foreach($dom->find('title') as $e)
+    {
+      $page_elements[] = $e->innertext;
+    }
+
+    $this->_title_tag = str_replace(array("\r", "\n"), ' ', implode('', $page_elements));
+    return $this->_title_tag;
+  }
+
   public function getBodyHTML()
   {
     return ($this->_body_html ? $this->_body_html : $this->assembleBodyHTML());
@@ -194,7 +218,12 @@ class Page
         {
           continue;
         }
-        $href = $matches[1];
+        $href = preg_replace('/^\.\.\/(.*)$/', '$1', rtrim($matches[1], '/'));
+        if (preg_match('~^[^/]~', $href))
+        {
+          $href = $this->getUrlDirectories() ? rtrim($this->getUrlDirectories(), '/') . '/' . $href : $href;
+          $href = preg_replace('~^//~', '/', $href);
+        }
         $this->_links[$href] = $href;
       }
     }

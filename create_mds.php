@@ -36,13 +36,20 @@ while(count($urls))
   }
   $finished_urls[$url] = $url;
   $extra_url_page = new MT_Transfer\Page($domain, $url, $content_div_id, $converter, $no_warn);
+  $page_title = $extra_url_page->getTitleTag();
   $urls = array_merge($urls, $extra_url_page->getInternalLinks());
-  $markdown = $extra_url_page->getMarkdown();
+  $markdown = MT_Transfer\Fixes::getFixedMarkdown($extra_url_page);
 
-  $new_filename = trim($config->get('md_directory', 'output'), '/') . '/'
-                . $extra_url_page->getUrlDirectories()
-                . preg_replace('/(.*)\.html?/i', '$1' , $extra_url_page->getUrl()) . '.md';
-  file_put_contents($new_filename, $markdown);
+  $directory = rtrim($config->get('md_directory', 'output'), '/') . '/'
+             . $extra_url_page->getUrlDirectories();
+
+  $new_filename = $directory . preg_replace('/(.*)\.html?/i', '$1' , $extra_url_page->getUrl())
+                . '.md';
+  if (!is_dir($directory)) {
+    mkdir($directory);
+  }
+  $header = $page_title ? '<!--|'.$page_title."|-->\n" : '';
+  file_put_contents($new_filename, $header.$markdown);
   if (!$config->get('quiet', 'output'))
   {
     echo "\n" . $new_filename . ' written...';
