@@ -190,7 +190,7 @@ class Page
       $href = $link->href;
       if (is_string($href) && preg_match($this->_link_preg, $href, $matches))
       {
-        if (preg_match('/.*\.(pdf|gif|png|mp3|m3u|doc|jpg|jpeg)$/i', $href))
+        if (preg_match('/.*\.(pdf|gif|png|mp3|m3u|ppt|doc|jpg|jpeg)$/i', $href))
         {
           continue;
         }
