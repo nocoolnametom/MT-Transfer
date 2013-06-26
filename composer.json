@@ -4,6 +4,8 @@
         "sunra/php-simple-html-dom-parser": "dev-master" 
     },
     "autoload": {
-        "psr-0": {"MT_Transfer": "src"}
+        "psr-0": {
+          "MT_Transfer": "src"
+        }
     }
 }

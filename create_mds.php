@@ -11,38 +11,43 @@ if ($config->get('use_markdown_extra', 'options')) {
 
 $domain = rtrim('http://' . $config->get('subdomain', 'website_information')
           . $config->get('domain', 'website_information'), '/') . '/';
-
+$content_div_id = 'div#' . $config->get('content_div_id', 'layout_info');
 $site_map = $config->get('site_map', 'website_information');
+$urls = $config->get('extra_urls', 'website_information');
 
-$extra_urls = $config->get('extra_urls', 'website_information');
+$finished_urls = array();
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $domain . $site_map);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-$site_map_page = curl_exec($ch);
+$site_map_page = new MT_Transfer\Page($domain, $site_map, $content_div_id, $converter, $config->get('hide_warnings', 'output'));
 
-$dom = Sunra\PhpSimple\HtmlDomParser::str_get_html($site_map_page);
+$urls = array_merge($urls, $site_map_page->getInternalLinks());
 
 $page_elements = array();
-foreach($extra_urls as $url)
+while(count($urls))
 {
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_URL, $domain . $url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  $url_page = curl_exec($ch);
-
-  $dom = Sunra\PhpSimple\HtmlDomParser::str_get_html($url_page);
-
-  $page_elements = array();
-
-  foreach($dom->find('div#' . $config->get('content_div_id', 'layout_info')) as $e)
+  $url = array_pop($urls);
+  if (isset($finished_urls[$url]))
   {
-    $page_elements[] = $e->outertext;
+    continue;
   }
+  if (preg_match('/.*Templates.*/', $url))
+  {
+    continue;
+  }
+  $finished_urls[$url] = $url;
+  $extra_url_page = new MT_Transfer\Page($domain, $url, $content_div_id, $converter, $config->get('hide_warnings', 'output'));
+  $urls = array_merge($urls, $extra_url_page->getInternalLinks());
+  $markdown = $extra_url_page->getMarkdown();
 
-  $page_text = str_replace(array("\r", "\n"), ' ', implode('', $page_elements));
-
-  $markdown = $converter->parseString($page_text);
-
-  file_put_contents(trim($config->get('md_directory', 'output'), '/') . '/' . $url . '.md', $markdown);
+  $new_filename = trim($config->get('md_directory', 'output'), '/') . '/'
+                . $extra_url_page->getUrlDirectories()
+                . preg_replace('/(.*)\.html?/i', '$1' , $extra_url_page->getUrl()) . '.md';
+  file_put_contents($new_filename, $markdown);
+  if (!$config->get('quiet', 'output'))
+  {
+    echo "\n" . $new_filename . ' written...';
+  }
+}
+if (!$config->get('quiet', 'output'))
+{
+  echo "\n";
 }
