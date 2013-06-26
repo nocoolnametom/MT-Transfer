@@ -14,10 +14,11 @@ $domain = rtrim('http://' . $config->get('subdomain', 'website_information')
 $content_div_id = 'div#' . $config->get('content_div_id', 'layout_info');
 $site_map = $config->get('site_map', 'website_information');
 $urls = $config->get('extra_urls', 'website_information');
+$no_warn = $config->get('hide_warnings', 'output');
 
 $finished_urls = array();
 
-$site_map_page = new MT_Transfer\Page($domain, $site_map, $content_div_id, $converter, $config->get('hide_warnings', 'output'));
+$site_map_page = new MT_Transfer\Page($domain, $site_map, $content_div_id, $converter, $no_warn);
 
 $urls = array_merge($urls, $site_map_page->getInternalLinks());
 
@@ -34,7 +35,7 @@ while(count($urls))
     continue;
   }
   $finished_urls[$url] = $url;
-  $extra_url_page = new MT_Transfer\Page($domain, $url, $content_div_id, $converter, $config->get('hide_warnings', 'output'));
+  $extra_url_page = new MT_Transfer\Page($domain, $url, $content_div_id, $converter, $no_warn);
   $urls = array_merge($urls, $extra_url_page->getInternalLinks());
   $markdown = $extra_url_page->getMarkdown();
 
